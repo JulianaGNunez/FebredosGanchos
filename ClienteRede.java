@@ -9,6 +9,7 @@ class ClienteRede extends JFrame {
   DataOutputStream os = null;
   DataInputStream is = null;
   Socket socket = null;
+  int alturaJanela = 650, larguraJanela = 800;
 
   int posX = 0, posY = 0;
   int posXAdversario = 0, posYAdversario = 0;
@@ -16,7 +17,6 @@ class ClienteRede extends JFrame {
   int posXGanchoAdv = 0, posYGanchoAdv = 0;
 
   class Desenho extends JPanel {
-    int alturaJanela = 700, larguraJanela = 1500;
     Desenho() {
       setPreferredSize(new Dimension(alturaJanela, larguraJanela));
     }
@@ -25,11 +25,19 @@ class ClienteRede extends JFrame {
       Graphics2D g2d = (Graphics2D) g;
       super.paintComponent(g2d);
       g2d.setBackground(new Color(207,140,225));
-      g2d.clearRect(0,0,larguraJanela,alturaJanela);
-      g2d.setColor(new Color(50, 250, 80));
-      g2d.fillOval(posX,posY, 12, 12);
-      g2d.setColor(new Color(240, 100, 10));
-      g2d.fillOval(posXAdversario,posYAdversario, 12, 12);
+      g2d.clearRect(0,0,larguraJanela + 13,alturaJanela + 9); // valores adicionados para não existir espaços em branco do reajuste
+      if(posX <= posXAdversario){ // para manter as cores consistentes
+        g2d.setColor(new Color(50, 250, 80));
+        g2d.fillOval(posX,posY, 12, 12);
+        g2d.setColor(new Color(240, 100, 10));
+        g2d.fillOval(posXAdversario,posYAdversario, 12, 12);
+      }
+      else{ // a unica coisa que acontece e trocar as cores
+        g2d.setColor(new Color(240, 100, 10));
+        g2d.fillOval(posX,posY, 12, 12);
+        g2d.setColor(new Color(50, 250, 80));
+        g2d.fillOval(posXAdversario,posYAdversario, 12, 12);
+      }
       Toolkit.getDefaultToolkit().sync();
     }
   }
@@ -130,9 +138,13 @@ class ClienteRede extends JFrame {
         }
       }
     });
+
     
-    pack();
-    setVisible(true);
+    this.setSize(larguraJanela + 8,alturaJanela + 13);
+    //pack();
+    this.setResizable(false);
+    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    this.setVisible(true);
   }
 
   static public void main(String[] args) {

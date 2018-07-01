@@ -66,8 +66,8 @@ class Dados {
   static final int NUM_MAX_JOGADORES = 2;
   static final int CLIENTE_UM = 0;
   static final int CLIENTE_DOIS = 1;
-  static final int LARG_CLIENTE = 600;
-  static final int ALTU_CLIENTE = 450;
+  static final int LARG_CLIENTE = 800;
+  static final int ALTU_CLIENTE = 650;
   static final int contador = 3;
   
   static final int velGancho = 40; // velocidade que o gancho anda quando eh atirado
@@ -90,9 +90,14 @@ class Dados {
       estado[i] = new EstadoJogador();
       estado[i].pontos = 0;
       estado[i].acao = 0;
-      estado[i].x = 30;
+      if(i == 0){
+        estado[i].x = LARG_CLIENTE/2 - 300;
+      }
+      else{
+        estado[i].x = LARG_CLIENTE/2 + 300;
+      }
       estado[i].y = ALTU_CLIENTE / 2;
-      estado[i].vy = 3;
+      estado[i].vy = 10;
     }
   }
   
@@ -108,8 +113,8 @@ class Dados {
         os[CLIENTE_UM].writeInt(estado[CLIENTE_UM].y);
         os[CLIENTE_UM].writeInt(estado[CLIENTE_UM].gx);
         os[CLIENTE_UM].writeInt(estado[CLIENTE_UM].gy);
-        os[CLIENTE_UM].writeInt(LARG_CLIENTE - estado[CLIENTE_DOIS].x);
-        os[CLIENTE_UM].writeInt(ALTU_CLIENTE - estado[CLIENTE_DOIS].y);
+        os[CLIENTE_UM].writeInt(estado[CLIENTE_DOIS].x);
+        os[CLIENTE_UM].writeInt(estado[CLIENTE_DOIS].y);
         os[CLIENTE_UM].writeInt(0);
         os[CLIENTE_UM].writeInt(0);
       }
@@ -120,8 +125,10 @@ class Dados {
         os[CLIENTE_DOIS].writeInt(estado[CLIENTE_DOIS].y);
         os[CLIENTE_DOIS].writeInt(estado[CLIENTE_DOIS].gx);
         os[CLIENTE_DOIS].writeInt(estado[CLIENTE_DOIS].gy);
-        os[CLIENTE_DOIS].writeInt(LARG_CLIENTE - estado[CLIENTE_UM].x);
-        os[CLIENTE_DOIS].writeInt(ALTU_CLIENTE - estado[CLIENTE_UM].y);
+        os[CLIENTE_DOIS].writeInt(estado[CLIENTE_UM].x);
+        os[CLIENTE_DOIS].writeInt(estado[CLIENTE_UM].y);
+        os[CLIENTE_DOIS].writeInt(0);
+        os[CLIENTE_DOIS].writeInt(0);
       }
       
       if (os[CLIENTE_UM] != null)
@@ -162,12 +169,7 @@ class Dados {
         estado[i].y += estado[i].vy;
 
       if (estado[i].y <= 0 || estado[i].y > ALTU_CLIENTE) {
-        int dy = -estado[i].vy;
-        dy += (int)(Math.random() * 3) - 1;
-        if (dy == 0)
           estado[i].vy = -estado[i].vy;
-        else
-          estado[i].vy = dy;
       }
 
       //estado[i].acao = 0;
