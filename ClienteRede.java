@@ -11,8 +11,10 @@ class ClienteRede extends JFrame {
   Scanner is = null;
   Socket socket = null;
   int alturaJanela = 650, larguraJanela = 800;
-  int raioPlayer = 40; // na verdade eh o diametro do jogador
+  int raioPlayer = 50; // na verdade eh o diametro do jogador
   int raio = 250;
+
+  //BufferedImage hook, hookAdv;
 
   int posX = 0, posY = 0;
   int posXAdversario = 0, posYAdversario = 0;
@@ -21,35 +23,48 @@ class ClienteRede extends JFrame {
 
   class Desenho extends JPanel {
     Desenho() {
+      /*
+      hook = LoadImage("Hooky.jpg");
+      hookAdv = LoadImage("Hooky.jpg");
+      */
       setPreferredSize(new Dimension(alturaJanela, larguraJanela));
     }
 
     public void paintComponent(Graphics g) {
       Graphics2D g2d = (Graphics2D) g;
       super.paintComponent(g2d);
-      g2d.setBackground(new Color(207,140,225));
+      g2d.setBackground(new Color(101,93,95));
       g2d.clearRect(0,0,larguraJanela, alturaJanela); // valores adicionados para não existir espaços em branco do reajuste
 
       // desenhando o circulo dos jogadores
       g2d.setColor(new Color(0, 0, 0));
       g2d.setStroke(new BasicStroke(3));
       g2d.drawOval(larguraJanela/2 - raio, alturaJanela/2 - raio, raio*2, raio*2);
-      g2d.setColor(new Color(207,140,225));
+      g2d.setColor(new Color(101,93,95));
       g2d.fillRect(larguraJanela/2 - 25, alturaJanela/2 - raio - 15, 50, raio*2 + 30);
 
 
       if(posX <= posXAdversario){ // para manter as cores consistentes
-        g2d.setColor(new Color(50, 250, 80));
+        g2d.setColor(new Color(27, 62, 222));
         g2d.fillOval(posX - raioPlayer/2,posY - raioPlayer/2, raioPlayer, raioPlayer);
-        g2d.setColor(new Color(240, 100, 10));
+        g2d.setColor(new Color(240, 37, 98));
         g2d.fillOval(posXAdversario - raioPlayer/2,posYAdversario - raioPlayer/2, raioPlayer, raioPlayer);
+
+        /*
+        AffineTransform at1 = AffineTransform.getTranslateInstance(P1.gX - P1.hook.getWidth()/2, P1.gY - P1.hook.getHeight()/2);
+        AffineTransform at2 = AffineTransform.getTranslateInstance(P2.gX - P2.hook.getWidth()/2, P2.gY - P2.hook.getHeight()/2);
+  
+        at1.rotate(Math.toRadians(P1.angulo), P1.hook.getWidth()/2, P1.hook.getHeight()/2);
+        at2.rotate(Math.toRadians(P2.angulo), P2.hook.getWidth()/2, P2.hook.getHeight()/2);
+        */
       }
       else{ // a unica coisa que acontece e trocar as cores
-        g2d.setColor(new Color(240, 100, 10));
+        g2d.setColor(new Color(240, 37, 98));
         g2d.fillOval(posX - raioPlayer/2, posY - raioPlayer/2, raioPlayer, raioPlayer);
-        g2d.setColor(new Color(50, 250, 80));
+        g2d.setColor(new Color(27, 62, 222));
         g2d.fillOval(posXAdversario - raioPlayer/2,posYAdversario - raioPlayer/2, raioPlayer, raioPlayer);
       }
+
       Toolkit.getDefaultToolkit().sync();
     }
   }

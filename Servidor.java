@@ -2,6 +2,10 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+//para calcular seno e cosseno
+import java.lang.Object;
+import java.lang.Math; 
+
 class Servidor {
   ServerSocket serverSocket = null;
 
@@ -69,10 +73,10 @@ class Dados {
   static final int LARG_CLIENTE = 800;
   static final int ALTU_CLIENTE = 650;
   static final int RAIO = 250;
-  static final int contador = 3;
+  static final int angInviavel = 8;
   
   static final int velGancho = 40; // velocidade que o gancho anda quando eh atirado
-  static final int velPlayer = 20; // velocidade que o player se move quando eh 
+  static final int velPlayer = 3; // velocidade que o player se move quando eh 
   
   class EstadoJogador {
     int acao; // o valor recebido da conexão com o cliente
@@ -81,7 +85,9 @@ class Dados {
     int gx, gy; // posição em x e y do gancho
     int vy; // velocidade em y do jogador
     int contador; // quantidade de frames á mais para evitar o delay do clique 
-    boolean imovel;
+    int angulo; // para o jogador e seu próprio gancho
+    int velGancho;
+    boolean imovel; // se o jogador esta atirando ou foi agarrado
   }
   
   EstadoJogador estado[] = new EstadoJogador[NUM_MAX_JOGADORES];
@@ -94,9 +100,13 @@ class Dados {
       estado[i].acao = 0;
       if(i == 0){
         estado[i].x = LARG_CLIENTE/2 - RAIO;
+        estado[i].angulo = 180;
+        estado[i].velGancho = velGancho;
       }
       else{
         estado[i].x = LARG_CLIENTE/2 + RAIO;
+        estado[i].angulo = 0;
+        estado[i].velGancho = -velGancho;
       }
       estado[i].y = ALTU_CLIENTE / 2;
       estado[i].vy = 10;
@@ -141,37 +151,74 @@ class Dados {
   }
   
   synchronized void alteraDadosInput(int c, int id) {
-    estado[id].acao = c;
+    if(c == 1 || c == 2){
+      if(estado[id].imovel == false)
+        estado[id].acao = c;
+    }
+    else
+      estado[id].acao = c;
   }
   
-  /*
-  synchronized void alteraDadosPlayer(int x, int y, int id) {
-    estado[id].x = x;
-    estado[id].y = y;
-  }
-
-  synchronized void alteraDadosGancho(int x, int y, int id) {
-    estado[id].gx = x;
-    estado[id].gy = y;
-  }
-  
-  synchronized void alteraDadosVelocidade(int dx, int dy, int id) {
-    estado[id].vy = dy;
-  }
-  */
-
-  /** Logica do jogo. Os testes das jogadas e das movimentações dos 
-   * elementos na arena do jogo são atualizados aqui.
-   */
   synchronized void logicaDoJogo() {
+    boolean moveu;
     for (int i = 0; i < NUM_MAX_JOGADORES; i++) {
+      moveu = false;
       if(estado[i].imovel == false){
-        if(estado[i].acao == 1)
-          estado[i].y -= estado[i].vy;
-        if(estado[i].acao == 2)
-          estado[i].y += estado[i].vy;
+        if(estado[i].acao == 1){
+          if(i == 0)
+            estado[i].angulo -= velPlayer;
+          else
+            estado[i].angulo += velPlayer;
+          moveu = true;
+          if(estado[i].angulo < 0)
+            estado[i].angulo = 360 + estado[i].angulo;
+          if(estado[i].angulo >= 360)
+           estado[i].angulo = estado[i].angulo % 360;
+        }
+        if(estado[i].acao == 2){
+          if(i == 0)
+            estado[i].angulo += velPlayer;
+          else
+            estado[i].angulo -= velPlayer;
+          moveu = true;
+          if(estado[i].angulo < 0)
+            estado[i].angulo = 360 + estado[i].angulo;
+          if(estado[i].angulo >= 360)
+            estado[i].angulo = estado[i].angulo % 360;
+        }
       }
-      //estado[i].acao = 0;
+
+      if(i == 0){
+        if(estado[0].angulo < 90 + angInviavel){
+          estado[0].angulo = 90 + angInviavel;
+        }
+        else{
+          if(estado[0].angulo > 270 - angInviavel)
+            estado[0].angulo = 270 - angInviavel;
+        }
+      }
+      else{
+        if(estado[1].angulo > 90 - angInviavel && estado[1].angulo < 270){
+          estado[1].angulo = 90 - angInviavel;
+        }
+        else{
+          if(estado[1].angulo > 270 && estado[1].angulo < 270 + angInviavel)
+            estado[1].angulo = 270 + angInviavel;
+        }
+      }
+   
+      if(moveu == true){
+        int x, y;
+
+        x = (int)((float)Math.cos(Math.toRadians((double)estado[i].angulo)) * (float)RAIO);
+        y = (int)((float)Math.sin(Math.toRadians((double)estado[i].angulo)) * (float)RAIO);
+        /*
+        if(i == 0)
+          x = - x;
+        */
+        estado[i].x = LARG_CLIENTE/2 + x;
+        estado[i].y = ALTU_CLIENTE/2 - y;
+      }
     }
   }
 }
