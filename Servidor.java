@@ -87,7 +87,10 @@ class Dados {
     int contador; // quantidade de frames á mais para evitar o delay do clique 
     int angulo; // para o jogador e seu próprio gancho
     int velGancho;
+    int contX, contY;
+    boolean agarrado, atirar,voltar;
     boolean imovel; // se o jogador esta atirando ou foi agarrado
+    
   }
   
   EstadoJogador estado[] = new EstadoJogador[NUM_MAX_JOGADORES];
@@ -98,17 +101,18 @@ class Dados {
       estado[i] = new EstadoJogador();
       estado[i].pontos = 0;
       estado[i].acao = 0;
+      estado[i].agarrado = estado[i].atirar = estado[i].voltar = false;
       if(i == 0){
-        estado[i].x = LARG_CLIENTE/2 - RAIO;
+        estado[i].gx = estado[i].x = LARG_CLIENTE/2 - RAIO;
         estado[i].angulo = 180;
         estado[i].velGancho = velGancho;
       }
       else{
-        estado[i].x = LARG_CLIENTE/2 + RAIO;
+        estado[i].gx = estado[i].x = LARG_CLIENTE/2 + RAIO;
         estado[i].angulo = 0;
-        estado[i].velGancho = -velGancho;
+        estado[i].velGancho = velGancho;
       }
-      estado[i].y = ALTU_CLIENTE / 2;
+      estado[i].gy = estado[i].y = ALTU_CLIENTE / 2;
       estado[i].vy = 10;
       estado[i].imovel = false;
     }
@@ -125,10 +129,13 @@ class Dados {
       os[CLIENTE_UM].println(estado[CLIENTE_UM].y);
       os[CLIENTE_UM].println(estado[CLIENTE_UM].gx);
       os[CLIENTE_UM].println(estado[CLIENTE_UM].gy);
+      os[CLIENTE_UM].println(estado[CLIENTE_UM].angulo);
+
       os[CLIENTE_UM].println(estado[CLIENTE_DOIS].x);
       os[CLIENTE_UM].println(estado[CLIENTE_DOIS].y);
-      os[CLIENTE_UM].println(0);
-      os[CLIENTE_UM].println(0);
+      os[CLIENTE_UM].println(estado[CLIENTE_DOIS].gx);
+      os[CLIENTE_UM].println(estado[CLIENTE_DOIS].gy);
+      os[CLIENTE_UM].println(estado[CLIENTE_DOIS].angulo);
     }
     
     if (os[CLIENTE_DOIS] != null) {
@@ -137,10 +144,13 @@ class Dados {
       os[CLIENTE_DOIS].println(estado[CLIENTE_DOIS].y);
       os[CLIENTE_DOIS].println(estado[CLIENTE_DOIS].gx);
       os[CLIENTE_DOIS].println(estado[CLIENTE_DOIS].gy);
+      os[CLIENTE_DOIS].println(estado[CLIENTE_DOIS].angulo);
+
       os[CLIENTE_DOIS].println(estado[CLIENTE_UM].x);
       os[CLIENTE_DOIS].println(estado[CLIENTE_UM].y);
-      os[CLIENTE_DOIS].println(0);
-      os[CLIENTE_DOIS].println(0);
+      os[CLIENTE_DOIS].println(estado[CLIENTE_UM].gx);
+      os[CLIENTE_DOIS].println(estado[CLIENTE_UM].gy);
+      os[CLIENTE_DOIS].println(estado[CLIENTE_UM].angulo);
     }
     
     if (os[CLIENTE_UM] != null)
@@ -163,7 +173,7 @@ class Dados {
     boolean moveu;
     for (int i = 0; i < NUM_MAX_JOGADORES; i++) {
       moveu = false;
-      if(estado[i].imovel == false){
+      if(estado[i].imovel == false && estado[i].atirar == false){
         if(estado[i].acao == 1){
           if(i == 0)
             estado[i].angulo -= velPlayer;
@@ -187,37 +197,80 @@ class Dados {
             estado[i].angulo = estado[i].angulo % 360;
         }
       }
-
-      if(i == 0){
-        if(estado[0].angulo < 90 + angInviavel){
-          estado[0].angulo = 90 + angInviavel;
-        }
-        else{
-          if(estado[0].angulo > 270 - angInviavel)
-            estado[0].angulo = 270 - angInviavel;
-        }
-      }
-      else{
-        if(estado[1].angulo > 90 - angInviavel && estado[1].angulo < 270){
-          estado[1].angulo = 90 - angInviavel;
-        }
-        else{
-          if(estado[1].angulo > 270 && estado[1].angulo < 270 + angInviavel)
-            estado[1].angulo = 270 + angInviavel;
-        }
-      }
    
       if(moveu == true){
+        if(i == 0){
+          if(estado[0].angulo < 90 + angInviavel){
+            estado[0].angulo = 90 + angInviavel;
+          }
+          else{
+            if(estado[0].angulo > 270 - angInviavel)
+              estado[0].angulo = 270 - angInviavel;
+          }
+        }
+        else{
+          if(estado[1].angulo > 90 - angInviavel && estado[1].angulo < 270){
+            estado[1].angulo = 90 - angInviavel;
+          }
+          else{
+            if(estado[1].angulo > 270 && estado[1].angulo < 270 + angInviavel)
+              estado[1].angulo = 270 + angInviavel;
+          }
+        }
+
         int x, y;
 
         x = (int)((float)Math.cos(Math.toRadians((double)estado[i].angulo)) * (float)RAIO);
         y = (int)((float)Math.sin(Math.toRadians((double)estado[i].angulo)) * (float)RAIO);
+        estado[i].gx = estado[i].x = LARG_CLIENTE/2 + x;
+        estado[i].gy = estado[i].y = ALTU_CLIENTE/2 - y; 
+      }
+      else{
+        if(estado[i].acao == 3){
+          if(estado[i].agarrado == false)
+            estado[i].atirar = true;
+        }
+        if(estado[i].agarrado == true){
+          estado[i].gx = estado[i].x;
+          estado[i].gy = estado[i].y;
+          estado[i].atirar = false;
+        }
+
+        if(estado[i].atirar == true){
+          int oposto;
+          if(i == 0){
+            estado[i].gx += (int)Math.cos(Math.toRadians(-estado[i].angulo))*estado[i].velGancho;
+            estado[i].gy += (int)Math.sin(Math.toRadians(estado[i].angulo))*estado[i].velGancho;
+            oposto = 1;
+          }
+          else{
+            estado[i].gx += (int)Math.cos(Math.toRadians(-estado[i].angulo))*-estado[i].velGancho;
+            estado[i].gy += (int)Math.sin(Math.toRadians(-estado[i].angulo))*-estado[i].velGancho;
+            oposto = 0;
+          }
+          int contX = (int)Math.cos(Math.toRadians(estado[i].angulo) + 180)*80; // contato em X
+          int contY = (int)Math.sin(Math.toRadians(estado[i].angulo) + 180)*80; // contato em Y
+          
+          if((Math.abs(estado[i].gx + contX) - estado[oposto].x) <= 47 &&  (Math.abs(estado[i].gy + contY) - estado[oposto].y) <= 47){
+            estado[i].atirar = false;
+            estado[i].voltar = estado[oposto].agarrado = true;
+          }
+          if(Math.abs(estado[i].gx + contX) > RAIO + 3 &&  Math.abs(estado[i].gy + contX) > RAIO){
+            estado[i].atirar = false;
+            estado[i].voltar = true;
+          }
+        }
         /*
-        if(i == 0)
-          x = - x;
+        if(estado[i].garrado == true){
+          if(i == 0){
+            estado[i].x = estado[1].gx + (int)Math.sin(Math.toRadians(estado[1].angulo))*80;
+            estado[i].y = estado[1].gy + (int)Math.sin(Math.toRadians(estado[1].angulo))*80;
+          }
+          else{
+
+          }
+        }
         */
-        estado[i].x = LARG_CLIENTE/2 + x;
-        estado[i].y = ALTU_CLIENTE/2 - y;
       }
     }
   }

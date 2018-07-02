@@ -4,30 +4,39 @@ import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.lang.Object.*;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+
+import java.awt.geom.AffineTransform;
+import java.awt.Graphics;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+
+
 
 class ClienteRede extends JFrame {
   Desenho des = new Desenho();
   PrintStream os = null;
   Scanner is = null;
   Socket socket = null;
+  BufferedImage hook, hookAdv;
   int alturaJanela = 650, larguraJanela = 800;
   int raioPlayer = 50; // na verdade eh o diametro do jogador
   int raio = 250;
-
-  //BufferedImage hook, hookAdv;
 
   int posX = 0, posY = 0;
   int posXAdversario = 0, posYAdversario = 0;
   int posXGancho = 0, posYGancho = 0;
   int posXGanchoAdv = 0, posYGanchoAdv = 0;
+  int angulo = 0, anguloAdv = 180;
 
   class Desenho extends JPanel {
     Desenho() {
-      /*
-      hook = LoadImage("Hooky.jpg");
-      hookAdv = LoadImage("Hooky.jpg");
-      */
       setPreferredSize(new Dimension(alturaJanela, larguraJanela));
+      hook = LoadImage("Hooky.png");
+      hookAdv = LoadImage("Hooky.png");
     }
 
     public void paintComponent(Graphics g) {
@@ -49,14 +58,6 @@ class ClienteRede extends JFrame {
         g2d.fillOval(posX - raioPlayer/2,posY - raioPlayer/2, raioPlayer, raioPlayer);
         g2d.setColor(new Color(240, 37, 98));
         g2d.fillOval(posXAdversario - raioPlayer/2,posYAdversario - raioPlayer/2, raioPlayer, raioPlayer);
-
-        /*
-        AffineTransform at1 = AffineTransform.getTranslateInstance(P1.gX - P1.hook.getWidth()/2, P1.gY - P1.hook.getHeight()/2);
-        AffineTransform at2 = AffineTransform.getTranslateInstance(P2.gX - P2.hook.getWidth()/2, P2.gY - P2.hook.getHeight()/2);
-  
-        at1.rotate(Math.toRadians(P1.angulo), P1.hook.getWidth()/2, P1.hook.getHeight()/2);
-        at2.rotate(Math.toRadians(P2.angulo), P2.hook.getWidth()/2, P2.hook.getHeight()/2);
-        */
       }
       else{ // a unica coisa que acontece e trocar as cores
         g2d.setColor(new Color(240, 37, 98));
@@ -64,6 +65,23 @@ class ClienteRede extends JFrame {
         g2d.setColor(new Color(27, 62, 222));
         g2d.fillOval(posXAdversario - raioPlayer/2,posYAdversario - raioPlayer/2, raioPlayer, raioPlayer);
       }
+      
+      AffineTransform at1 = AffineTransform.getTranslateInstance(posXGancho - hook.getWidth()/2, posYGancho - hook.getHeight()/2);
+      AffineTransform at2 = AffineTransform.getTranslateInstance(posXGanchoAdv - hookAdv.getWidth()/2, posYGanchoAdv - hookAdv.getHeight()/2);
+      
+      at1.rotate(Math.toRadians(-angulo + 180), hook.getWidth()/2, hook.getHeight()/2);
+      at2.rotate(Math.toRadians(-anguloAdv+180), hook.getWidth()/2, hookAdv.getHeight()/2);
+      
+      g2d.drawImage(hook, at1, null);
+      g2d.drawImage(hookAdv, at2, null);
+
+      int xis = (int)(Math.cos(Math.toRadians(-angulo + 180))*80);
+      int yis = (int)(Math.sin(Math.toRadians(-angulo + 180))*80);
+
+      //System.out.println("Angulo: " + (-angulo + 180) + " X: " + xis + " Y: " + yis);
+
+      g2d.setColor(new Color(240, 240, 240));
+      g2d.fillOval(posX +xis - 5, posY + yis - 5, 10, 10);
 
       Toolkit.getDefaultToolkit().sync();
     }
@@ -105,11 +123,13 @@ class ClienteRede extends JFrame {
           posY = is.nextInt();
           posXGancho = is.nextInt();
           posYGancho = is.nextInt();
+          angulo = is.nextInt();
           //dados do Player adversario
           posXAdversario = is.nextInt();
           posYAdversario = is.nextInt();
           posXGanchoAdv = is.nextInt();
-          posYGanchoAdv= is.nextInt();
+          posYGanchoAdv = is.nextInt();
+          anguloAdv = is.nextInt();
           repaint();
         }
       }
@@ -158,5 +178,13 @@ class ClienteRede extends JFrame {
 
   static public void main(String[] args) {
     ClienteRede f = new ClienteRede();
+  }
+
+  public BufferedImage LoadImage(String FileName){ //Carrega a imagem no modo BufferedImage, que é trabalhado pelo AffineTransform
+    BufferedImage img = null;
+    try{
+    img = ImageIO.read(new File(FileName));
+  }catch(IOException e){}
+    return img;
   }
 }
