@@ -51,7 +51,9 @@ class ClienteRede extends JFrame {
       g2d.drawOval(larguraJanela/2 - raio, alturaJanela/2 - raio, raio*2, raio*2);
       g2d.setColor(new Color(101,93,95));
       g2d.fillRect(larguraJanela/2 - 25, alturaJanela/2 - raio - 15, 50, raio*2 + 30);
-
+      
+      g2d.setColor(new Color(60,60,60));
+      g2d.fillOval(larguraJanela/2 - 65, alturaJanela/2 - 65, 130, 130);
 
       if(posX <= posXAdversario){ // para manter as cores consistentes
         g2d.setColor(new Color(27, 62, 222));
@@ -75,14 +77,15 @@ class ClienteRede extends JFrame {
       g2d.drawImage(hook, at1, null);
       g2d.drawImage(hookAdv, at2, null);
 
+      /*
       int xis = (int)(Math.cos(Math.toRadians(-angulo + 180))*80);
       int yis = (int)(Math.sin(Math.toRadians(-angulo + 180))*80);
 
-      //System.out.println("Angulo: " + (-angulo + 180) + " X: " + xis + " Y: " + yis);
+      System.out.println("Angulo: " + (-angulo + 180) + " X: " + xis + " Y: " + yis);
 
       g2d.setColor(new Color(240, 240, 240));
       g2d.fillOval(posX +xis - 5, posY + yis - 5, 10, 10);
-
+      */
       Toolkit.getDefaultToolkit().sync();
     }
   }

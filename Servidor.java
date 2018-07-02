@@ -75,7 +75,7 @@ class Dados {
   static final int RAIO = 250;
   static final int angInviavel = 8;
   
-  static final int velGancho = 40; // velocidade que o gancho anda quando eh atirado
+  static final int velGancho = 35; // velocidade que o gancho anda quando eh atirado
   static final int velPlayer = 3; // velocidade que o player se move quando eh 
   
   class EstadoJogador {
@@ -171,9 +171,10 @@ class Dados {
   
   synchronized void logicaDoJogo() {
     boolean moveu;
+    int x, y;
     for (int i = 0; i < NUM_MAX_JOGADORES; i++) {
       moveu = false;
-      if(estado[i].imovel == false && estado[i].atirar == false){
+      if(estado[i].imovel == false && estado[i].atirar == false && estado[i].voltar == false){
         if(estado[i].acao == 1){
           if(i == 0)
             estado[i].angulo -= velPlayer;
@@ -217,9 +218,6 @@ class Dados {
               estado[1].angulo = 270 + angInviavel;
           }
         }
-
-        int x, y;
-
         x = (int)((float)Math.cos(Math.toRadians((double)estado[i].angulo)) * (float)RAIO);
         y = (int)((float)Math.sin(Math.toRadians((double)estado[i].angulo)) * (float)RAIO);
         estado[i].gx = estado[i].x = LARG_CLIENTE/2 + x;
@@ -227,7 +225,7 @@ class Dados {
       }
       else{
         if(estado[i].acao == 3){
-          if(estado[i].agarrado == false)
+          if(estado[i].agarrado == false && estado[i].voltar == false)
             estado[i].atirar = true;
         }
         if(estado[i].agarrado == true){
@@ -237,27 +235,31 @@ class Dados {
         }
 
         if(estado[i].atirar == true){
-          int oposto;
-          if(i == 0){
-            estado[i].gx += (int)Math.cos(Math.toRadians(-estado[i].angulo))*estado[i].velGancho;
-            estado[i].gy += (int)Math.sin(Math.toRadians(estado[i].angulo))*estado[i].velGancho;
-            oposto = 1;
-          }
-          else{
-            estado[i].gx += (int)Math.cos(Math.toRadians(-estado[i].angulo))*-estado[i].velGancho;
-            estado[i].gy += (int)Math.sin(Math.toRadians(-estado[i].angulo))*-estado[i].velGancho;
-            oposto = 0;
-          }
+          estado[i].gx += (int)(Math.cos(Math.toRadians(-estado[i].angulo + 180))*estado[i].velGancho);
+          estado[i].gy += (int)(Math.sin(Math.toRadians(-estado[i].angulo +180))*estado[i].velGancho);
+
           int contX = (int)Math.cos(Math.toRadians(estado[i].angulo) + 180)*80; // contato em X
           int contY = (int)Math.sin(Math.toRadians(estado[i].angulo) + 180)*80; // contato em Y
-          
+          /*
           if((Math.abs(estado[i].gx + contX) - estado[oposto].x) <= 47 &&  (Math.abs(estado[i].gy + contY) - estado[oposto].y) <= 47){
             estado[i].atirar = false;
             estado[i].voltar = estado[oposto].agarrado = true;
-          }
-          if(Math.abs(estado[i].gx + contX) > RAIO + 3 &&  Math.abs(estado[i].gy + contX) > RAIO){
+          } */
+          
+          if(Math.sqrt(Math.pow(estado[i].gx - estado[i].x,2) + Math.pow(estado[i].gy - estado[i].y,2)) > 2*RAIO - 83){
             estado[i].atirar = false;
             estado[i].voltar = true;
+          }
+        }
+
+        if(estado[i].voltar == true){
+          estado[i].gx -= (int)(Math.cos(Math.toRadians(-estado[i].angulo + 180))*estado[i].velGancho);
+          estado[i].gy -= (int)(Math.sin(Math.toRadians(-estado[i].angulo +180))*estado[i].velGancho);
+
+          if(Math.sqrt(Math.pow(estado[i].gx - estado[i].x,2) + Math.pow(estado[i].gy - estado[i].y,2)) <= 0){
+            estado[i].gx = estado[i].x;
+            estado[i].gy = estado[i].y;
+            estado[i].voltar = false;
           }
         }
         /*
